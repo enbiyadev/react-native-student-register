@@ -1,0 +1,3 @@
+rootProject.name = 'ogrenci_kayit'
+
+include ':app'
