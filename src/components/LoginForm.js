@@ -1,48 +1,27 @@
 import React, { Component } from "react";
-import { Alert, TextInput } from "react-native";
-import firebase from "firebase";
+import { View, TextInput } from "react-native";
 import { connect } from "react-redux";
 //
-import { emailChanged, passwordChanged } from "../actions";
+import { emailChanged, passwordChanged, loginUser } from "../actions";
 //
 import { Button, Card, CardSection, Spinner } from "../common/index";
 
 class LoginForm extends Component {
-  state = { email: "", password: "", loading: false }
+  // state = { email: "", password: "", loading: false }
 
   clickLogin() {
-    this.setState({ loading: true });
+    const { email, password } = this.props;
 
-    const { email, password } = this.state;
-
-    if( email === "" || password === "" ) {
-      this.setState({ loading: false });
-      
-      Alert.alert(
-        "Mesaj",
-        "Her iki alanda dolu olmalı!",
-        [
-          { text: "Tamam", onPress: () => null }
-        ]
-      );
-    } else {
-      firebase.auth().signInWithEmailAndPassword( email, password )
-      .then( this.loginSuccess.bind(this) )
-      .catch(() => { 
-        firebase.auth().createUserWithEmailAndPassword( email, password )
-        .then( this.loginSuccess.bind(this) )
-        .catch( this.loginFail.bind(this) );
-      });
-    }
+    this.props.loginUser({ email, password });
   }
 
-  loginSuccess() {
+  /*loginSuccess() {
     console.log("Success");
 
     this.setState({ loading: false });
-  }
+   }
 
-  loginFail() {
+   loginFail() {
     console.log("Fail");
 
     this.setState({ loading: false });
@@ -54,10 +33,10 @@ class LoginForm extends Component {
         { text: "Tamam", onPress: () => null }
       ]
     );
-  }
+  }*/
 
   renderButton() {
-    if ( !this.state.loading ){
+    if ( !this.props.loading ){
       return <Button onPress={ this.clickLogin.bind(this) }>GİRİŞ</Button>
     }
 
@@ -65,41 +44,47 @@ class LoginForm extends Component {
   }
 
   render() {
-    console.log( "Email password " + this.props.email );
-    console.log( "Response password " + this.props.password );
+    // console.log( "Email password " + this.props.email );
+    // console.log( "Response password " + this.props.password );
 
-    const { inputStyle } = styles;
+    const { viewStyle, inputStyle } = styles;
 
     return (
-      <Card>
-        <CardSection>
-          <TextInput 
-            placeholder="E-mail"
-            style={ inputStyle }
-            value={ this.props.email }
-            onChangeText={ email => this.props.emailChanged(email) }
-          />
-        </CardSection>
+      <View style= { viewStyle }>
+        <Card>
+          <CardSection>
+            <TextInput 
+              placeholder="E-mail"
+              style={ inputStyle }
+              value={ this.props.email }
+              onChangeText={ email => this.props.emailChanged(email) }
+            />
+          </CardSection>
 
-        <CardSection>
-          <TextInput 
-            secureTextEntry
-            placeholder="Şifre"
-            style={ inputStyle }
-            value={ this.props.password }
-            onChangeText={ password => this.props.passwordChanged(password) }
-          />
-        </CardSection>
+          <CardSection>
+            <TextInput 
+              secureTextEntry
+              placeholder="Şifre"
+              style={ inputStyle }
+              value={ this.props.password }
+              onChangeText={ password => this.props.passwordChanged(password) }
+            />
+          </CardSection>
 
-        <CardSection>
-          { this.renderButton() }
-        </CardSection>
-      </Card>
+          <CardSection>
+            { this.renderButton() }
+          </CardSection>
+        </Card>
+      </View>
     );
   }
 }
 
 const styles = {
+  viewStyle: {
+    flex: 1,
+    backgroundColor: "#fff"
+  },
   inputStyle: {
     color: "#000",
     paddingRight: 5,
@@ -111,12 +96,13 @@ const styles = {
 }
 
 const mapStateToProps = ({ authenticationResponse }) => {
-  const { email, password } = authenticationResponse;
+  const { email, password, loading } = authenticationResponse;
 
   return {
     email,
-    password
+    password,
+    loading
   }
 }
 
-export default connect(mapStateToProps, { emailChanged, passwordChanged })(LoginForm);
+export default connect(mapStateToProps, { emailChanged, passwordChanged, loginUser })(LoginForm);
